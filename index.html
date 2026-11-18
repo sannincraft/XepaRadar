@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XepaRadar — Ofertas Relâmpago de Fim de Feira</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>XepaRadar</h1>
+      <span class="subtitle">Fim de feira sem desperdício</span>
+    </div>
+    <div id="network-badge" class="badge badge-online" role="status" aria-live="polite">
+      Online
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Navegação principal">
+    <button class="tab-btn active" data-target="sec-mural">Mural Xepa</button>
+    <button class="tab-btn" data-target="sec-anunciar">Anunciar Lote</button>
+    <button class="tab-btn" data-target="sec-minhas">Minhas Bancas</button>
+    <button class="tab-btn" data-target="sec-sobre">Sobre & LGPD</button>
+  </nav>
+
+  <main class="container">
+    <!-- SEÇÃO 1: INÍCIO / MURAL -->
+    <section id="sec-mural" class="panel active">
+      <div class="panel-header">
+        <h2>Lotes ativos agora</h2>
+        <button id="btn-locate-user" class="btn-secondary" type="button">
+          Ordenar por proximidade
+        </button>
+      </div>
+      <p id="location-status" class="hint">Mostrando ofertas recentes da feira.</p>
+      <div id="offers-list" class="cards-grid"></div>
+    </section>
+
+    <!-- SEÇÃO 2: AÇÃO PRINCIPAL / ANUNCIAR -->
+    <section id="sec-anunciar" class="panel">
+      <h2>Anunciar lote de fim de feira</h2>
+      <p class="hint">
+        Enquadre apenas os alimentos na bancada, evitando rostos de pessoas ao fundo.
+      </p>
+
+      <form id="offer-form" class="card-form">
+        <label class="file-label" for="photo-input">
+          <span id="photo-label-text">Fotografar lote na bancada</span>
+          <input
+            id="photo-input"
+            type="file"
+            accept="image/*"
+            capture="environment"
+          >
+        </label>
+        <img id="photo-preview" class="preview hidden" alt="Pré-visualização do lote">
+
+        <label>
+          Produto / Lote
+          <input type="text" id="product-name" placeholder="Ex.: 3 pencas de banana-da-terra" required>
+        </label>
+
+        <div class="row-2">
+          <label>
+            Preço normal (R$)
+            <input type="number" id="old-price" step="0.50" min="1" placeholder="18,00" required>
+          </label>
+          <label>
+            Preço Xepa (R$)
+            <input type="number" id="xepa-price" step="0.50" min="0.50" placeholder="8,00" required>
+          </label>
+        </div>
+
+        <label>
+          Banca e Setor da Feira
+          <input type="text" id="stall-info" placeholder="Ex.: Banca 12 - Galpão Hortifrúti" required>
+        </label>
+
+        <div class="gps-box">
+          <button type="button" id="btn-capture-gps" class="btn-secondary">
+            Capturar GPS da banca
+          </button>
+          <span id="gps-feedback" class="hint">Opcional (usa setor manual se sem sinal)</span>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          Publicar lote agora
+        </button>
+      </form>
+    </section>
+
+    <!-- SEÇÃO 3: LISTAGEM E ACOMPANHAMENTO -->
+    <section id="sec-minhas" class="panel">
+      <div class="panel-header">
+        <h2>Minhas bancas e fila offline</h2>
+        <button id="btn-sync-now" class="btn-secondary" type="button">
+          Sincronizar fila
+        </button>
+      </div>
+      <div id="my-offers-list" class="cards-grid"></div>
+    </section>
+
+    <!-- SEÇÃO 4: INFORMAÇÕES SOBRE O PROJETO -->
+    <section id="sec-sobre" class="panel">
+      <h2>Sobre o XepaRadar</h2>
+      <article class="info-card">
+        <h3>Propósito</h3>
+        <p>
+          Ferramenta comunitária para conectar feirantes com sobras perecíveis de fim de feira
+          a consumidores da vizinhança, reduzindo perdas pós-colheita e ampliando o acesso a
+          alimentos frescos.
+        </p>
+
+        <h3>Cuidados Éticos, Legais e de Privacidade (LGPD)</h3>
+        <ul>
+          <li><strong>Minimização de dados:</strong> não coletamos CPF, endereço residencial ou dados bancários.</li>
+          <li><strong>Expiração automática:</strong> anúncios e coordenadas são descartados automaticamente após o fim da feira.</li>
+          <li><strong>Remoção de metadados:</strong> fotos são reprocessadas localmente via Canvas antes de serem salvas, removendo dados EXIF da câmera.</li>
+          <li><strong>Caráter informativo:</strong> a aplicação não intermedia pagamentos nem substitui a fiscalização sanitária oficial.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
