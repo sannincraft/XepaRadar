@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const ofertasServico = require('../servicos/ofertasServico');
 const { validarOferta } = require('../servicos/validacao');
+const fotosServico = require('../servicos/fotos');
 
 /**
  * GET /api/ofertas
@@ -48,10 +49,12 @@ router.get('/minhas', (req, res) => {
  * POST /api/ofertas
  * Cria uma nova oferta ou responde idempotentemente caso o ID já exista no servidor.
  * Valida os campos obrigatórios e responde 400 com mapa de erros caso inválido.
+ * Processa foto JPEG de até 200 KB, gravando no disco e retornando a URL correspondente.
  */
 router.post('/', (req, res) => {
   try {
     const donoId = req.headers['x-dono-id'] || req.body.donoId;
+    const id = req.body.id || `lot-${Date.now()}`;
 
     // Idempotência: se a oferta já existe no servidor, responde 200 de imediato
     if (req.body.id) {
@@ -72,6 +75,19 @@ router.post('/', (req, res) => {
       return res.status(400).json({ erros: validacao.erros });
     }
 
+    // Processamento da Foto (se enviada)
+    const fotoRecebida = req.body.foto || req.body.photo || req.body.fotoUrl;
+    if (fotoRecebida) {
+      const resultadoFoto = fotosServico.processarESalvarFoto(fotoRecebida, id);
+      if (!resultadoFoto.sucesso) {
+        return res.status(resultadoFoto.status || 400).json({
+          erro: resultadoFoto.erro
+        });
+      }
+      req.body.fotoUrl = resultadoFoto.fotoUrl;
+    }
+
+    req.body.id = id;
     const { jaExistia, oferta } = ofertasServico.criarOferta(req.body, donoId);
 
     if (jaExistia) {
