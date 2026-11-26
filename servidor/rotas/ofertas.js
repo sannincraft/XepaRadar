@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const ofertasServico = require('../servicos/ofertasServico');
+const { validarOferta } = require('../servicos/validacao');
 
 /**
  * GET /api/ofertas
@@ -46,10 +47,31 @@ router.get('/minhas', (req, res) => {
 /**
  * POST /api/ofertas
  * Cria uma nova oferta ou responde idempotentemente caso o ID já exista no servidor.
+ * Valida os campos obrigatórios e responde 400 com mapa de erros caso inválido.
  */
 router.post('/', (req, res) => {
   try {
     const donoId = req.headers['x-dono-id'] || req.body.donoId;
+
+    // Idempotência: se a oferta já existe no servidor, responde 200 de imediato
+    if (req.body.id) {
+      const ofertasAtuais = ofertasServico.lerOfertas();
+      const jaExiste = ofertasAtuais.find((o) => o.id === req.body.id);
+      if (jaExiste) {
+        return res.status(200).json({
+          status: 'ok',
+          mensagem: 'Oferta já existia no servidor.',
+          oferta: jaExiste
+        });
+      }
+    }
+
+    // Validação dos dados de entrada
+    const validacao = validarOferta(req.body, donoId);
+    if (!validacao.valido) {
+      return res.status(400).json({ erros: validacao.erros });
+    }
+
     const { jaExistia, oferta } = ofertasServico.criarOferta(req.body, donoId);
 
     if (jaExistia) {
