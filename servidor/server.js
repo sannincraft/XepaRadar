@@ -12,6 +12,10 @@ app.get('/api/saude', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Rotas de ofertas da feira (/api/ofertas)
+const rotasOfertas = require('./rotas/ofertas');
+app.use('/api/ofertas', rotasOfertas);
+
 // Servir os arquivos estáticos da aplicação frontend (localizados na raiz do repositório)
 const pastaEstatica = path.join(__dirname, '..');
 app.use(express.static(pastaEstatica));
