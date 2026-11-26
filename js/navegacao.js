@@ -1,5 +1,7 @@
 /* navegacao.js — rotas por hash: sincroniza URL, menu e tela ativa.
-   Rotas: #/mural, #/anunciar, #/minhas e #/sobre. */
+   Rotas: #/mural, #/anunciar, #/minhas e #/sobre.
+   Rota inexistente volta ao mural; ao trocar de tela, o foco vai
+   para o título (leitores de tela anunciam a nova tela). */
 
 const ROTAS = {
   "/mural": "sec-mural",
@@ -15,7 +17,15 @@ export function rotaAtual() {
   return ROTAS[hash] ? hash : ROTA_PADRAO;
 }
 
-function aplicarRota() {
+function aplicarRota(moverFoco) {
+  const hashBruto = location.hash.replace(/^#/, "");
+
+  /* rota inexistente: corrige a URL para a rota padrão */
+  if (hashBruto && !ROTAS[hashBruto]) {
+    location.replace(`#${ROTA_PADRAO}`);
+    return;
+  }
+
   const rota = rotaAtual();
   const secaoAtiva = ROTAS[rota];
 
@@ -24,8 +34,22 @@ function aplicarRota() {
   });
 
   document.querySelectorAll(".tab-btn").forEach((botao) => {
-    botao.classList.toggle("active", botao.dataset.rota === rota);
+    const ativo = botao.dataset.rota === rota;
+    botao.classList.toggle("active", ativo);
+    if (ativo) {
+      botao.setAttribute("aria-current", "page");
+    } else {
+      botao.removeAttribute("aria-current");
+    }
   });
+
+  if (moverFoco) {
+    const titulo = document.querySelector(`#${secaoAtiva} h2`);
+    if (titulo) {
+      titulo.setAttribute("tabindex", "-1");
+      titulo.focus({ preventScroll: true });
+    }
+  }
 }
 
 export function iniciarNavegacao() {
@@ -35,10 +59,10 @@ export function iniciarNavegacao() {
     });
   });
 
-  window.addEventListener("hashchange", aplicarRota);
+  window.addEventListener("hashchange", () => aplicarRota(true));
 
   if (!location.hash) {
     location.replace(`#${ROTA_PADRAO}`);
   }
-  aplicarRota();
+  aplicarRota(false);
 }

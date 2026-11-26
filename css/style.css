@@ -264,6 +264,7 @@ select {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .chip.active {
@@ -287,6 +288,19 @@ select {
   font-weight: 700;
   cursor: pointer;
   font-size: 0.9rem;
+  /* área de toque mínima confortável em telas pequenas */
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* foco visível para teclado em todos os controles interativos */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.chip:focus-visible,
+.tab-btn:focus-visible {
+  outline: 3px solid var(--accent-leaf);
+  outline-offset: 2px;
 }
 
 .btn-primary {
@@ -308,6 +322,7 @@ select {
   font-weight: 700;
   cursor: pointer;
   font-size: 0.9rem;
+  min-height: 44px;
 }
 
 .info-card h3 {
@@ -340,4 +355,33 @@ select {
 
 .toast.show {
   opacity: 1;
+}
+
+/* Tablet: duas colunas de cards */
+@media (min-width: 640px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: três colunas e conteúdo mais largo */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1060px;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Respeita usuários com movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

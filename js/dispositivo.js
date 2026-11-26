@@ -65,6 +65,33 @@ export async function capturarEComprimirFoto(arquivo) {
   return { dataUrl, tamanhoKB: Math.max(1, Math.round(blob.size / 1024)) };
 }
 
+/* Compartilhamento: Web Share API com área de transferência como alternativa */
+export async function compartilharOferta(offer, aoCopiar) {
+  const resumo = [
+    "XepaRadar — Oferta de fim de feira",
+    `Lote: ${offer.product}`,
+    offer.quantidade ? `Quantidade: ${offer.quantidade}` : null,
+    offer.categoria ? `Categoria: ${offer.categoria}` : null,
+    `De R$ ${offer.oldPrice.toFixed(2)} por R$ ${offer.xepaPrice.toFixed(2)}`,
+    `Local: ${offer.stall}`
+  ].filter(Boolean).join("\n");
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Oferta XepaRadar", text: resumo });
+      return;
+    } catch (_) {
+      /* usuário cancelou o menu nativo; não copia de surpresa */
+      return;
+    }
+  }
+
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(resumo);
+    if (aoCopiar) aoCopiar();
+  }
+}
+
 /* Geolocalização com tratamento de ausência de suporte e de permissão */
 export function obterLocalizacao() {
   return new Promise((resolve, reject) => {

@@ -9,6 +9,7 @@ import {
   filtroAtual,
   removerOferta
 } from "./estado.js";
+import { compartilharOferta } from "./dispositivo.js";
 
 function persistir(ofertas) {
   const resultado = saveOffers(ofertas);
@@ -61,30 +62,6 @@ export function syncOfflineQueue() {
       renderAll();
       showToast("Conexão restabelecida: lotes offline sincronizados.");
     }
-  }
-}
-
-/* Compartilhamento / área de transferência */
-export async function shareOffer(offer) {
-  const text = [
-    `XepaRadar - Oferta de Fim de Feira`,
-    `Lote: ${offer.product}`,
-    `De R$ ${offer.oldPrice.toFixed(2)} por R$ ${offer.xepaPrice.toFixed(2)}`,
-    `Local: ${offer.stall}`
-  ].join("\n");
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "Oferta XepaRadar", text });
-      return;
-    } catch (_) {
-      /* Usuário cancelou o compartilhamento nativo */
-    }
-  }
-
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-    showToast("Resumo da oferta copiado para a área de transferência.");
   }
 }
 
@@ -206,7 +183,11 @@ export function renderAll() {
     shareBtn.type = "button";
     shareBtn.className = "btn-secondary share-btn";
     shareBtn.textContent = "Compartilhar oferta";
-    shareBtn.addEventListener("click", () => shareOffer(offer));
+    shareBtn.addEventListener("click", () =>
+      compartilharOferta(offer, () =>
+        showToast("Resumo da oferta copiado para a área de transferência.")
+      )
+    );
     card.appendChild(shareBtn);
 
     muralEl.appendChild(card);
