@@ -1,0 +1,20 @@
+[
+  {
+    "id": "lot-1795724204758",
+    "product": "Tomate maduro para molho (1,5 kg)",
+    "preco": 4.5,
+    "synced": true
+  },
+  {
+    "id": "seed-banana",
+    "product": "Banana-da-terra madura",
+    "preco": 8,
+    "synced": true
+  },
+  {
+    "id": "seed-cheiroverde",
+    "product": "Cheiro-verde + cebolinha (kit com 4 maços)",
+    "preco": 5,
+    "synced": true
+  }
+]
