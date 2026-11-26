@@ -9,7 +9,8 @@ import {
   getCapturedCoords,
   getCompressedPhoto,
   definirOfertasBase,
-  ofertasJaGravadas
+  ofertasJaGravadas,
+  setFiltro
 } from "./estado.js";
 import {
   renderAll,
@@ -17,9 +18,15 @@ import {
   updateNetworkStatus,
   syncOfflineQueue,
   mostrarCarregandoMural,
-  mostrarErroMural
+  mostrarErroMural,
+  mostrarErrosFormulario,
+  limparErrosFormulario,
+  definirCategoriasFiltro,
+  renderFiltros
 } from "./interface.js";
 import { iniciarNavegacao } from "./navegacao.js";
+import { validarOferta } from "./validacao.js";
+import { capturarEComprimirFoto, obterLocalizacao } from "./dispositivo.js";
 
 /* Converte uma oferta do data/dados.json para o formato usado no app */
 function mapearOferta(oferta) {
@@ -51,6 +58,8 @@ async function carregarDadosDaFeira() {
     const dados = await resposta.json();
     const ofertas = dados.ofertas.map(mapearOferta);
     definirOfertasBase(ofertas);
+    definirCategoriasFiltro(dados.categorias);
+    renderFiltros();
     /* Primeira visita: grava as ofertas de exemplo no localStorage */
     if (!ofertasJaGravadas()) {
       saveOffers(ofertas);
@@ -65,31 +74,6 @@ async function carregarDadosDaFeira() {
   }
 }
 
-/* Captura e compressão de imagem via Canvas (remove EXIF) */
-function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxWidth = 720;
-        const scale = Math.min(1, maxWidth / img.width);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.72));
-      };
-      img.onerror = reject;
-      img.src = event.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   updateNetworkStatus();
   carregarDadosDaFeira();
@@ -101,60 +85,80 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("photo-input").addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const foto = await compressImage(file);
-    setCompressedPhoto(foto);
-    const preview = document.getElementById("photo-preview");
-    preview.src = foto;
-    preview.classList.remove("hidden");
-    document.getElementById("photo-label-text").textContent = "Foto otimizada pronta";
-  });
-
-  document.getElementById("btn-capture-gps").addEventListener("click", () => {
-    const feedback = document.getElementById("gps-feedback");
-    if (!navigator.geolocation) {
-      feedback.textContent = "GPS indisponível neste navegador.";
-      return;
+    try {
+      const foto = await capturarEComprimirFoto(file);
+      setCompressedPhoto(foto.dataUrl);
+      const preview = document.getElementById("photo-preview");
+      preview.src = foto.dataUrl;
+      preview.classList.remove("hidden");
+      document.getElementById("photo-label-text").textContent =
+        `Foto pronta (~${foto.tamanhoKB} KB)`;
+    } catch (erro) {
+      console.error("Falha ao processar a foto:", erro);
+      showToast("Não foi possível processar a foto. Tente outra imagem.");
     }
-    feedback.textContent = "Obtendo posição...";
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCapturedCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        feedback.textContent = `Coordenadas capturadas (precisão ~${Math.round(pos.coords.accuracy)}m)`;
-      },
-      () => {
-        feedback.textContent = "Sem permissão de GPS. O setor digitado será usado.";
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
   });
 
-  document.getElementById("btn-locate-user").addEventListener("click", () => {
+  document.getElementById("btn-capture-gps").addEventListener("click", async () => {
+    const feedback = document.getElementById("gps-feedback");
+    feedback.textContent = "Obtendo posição...";
+    try {
+      const posicao = await obterLocalizacao();
+      setCapturedCoords({ lat: posicao.lat, lng: posicao.lng });
+      feedback.textContent = `Coordenadas capturadas (precisão ~${posicao.precisao}m)`;
+    } catch (erro) {
+      /* Sem GPS ainda dá para anunciar: vale o setor escolhido manualmente */
+      feedback.textContent = `${erro.message} O setor escolhido será usado.`;
+    }
+  });
+
+  document.getElementById("btn-locate-user").addEventListener("click", async () => {
     const status = document.getElementById("location-status");
-    if (!navigator.geolocation) return;
     status.textContent = "Calculando distância até as bancas...";
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        status.textContent = "Ofertas ordenadas da banca mais próxima para a mais distante.";
-        renderAll();
-      },
-      () => {
-        status.textContent = "Não foi possível obter sua localização; exibindo por ordem recente.";
-      }
-    );
+    try {
+      const posicao = await obterLocalizacao();
+      setUserCoords({ lat: posicao.lat, lng: posicao.lng });
+      status.textContent = "Ofertas ordenadas da banca mais próxima para a mais distante.";
+      renderAll();
+    } catch (erro) {
+      status.textContent = `${erro.message} Exibindo por ordem recente.`;
+    }
   });
 
   document.getElementById("offer-form").addEventListener("submit", (e) => {
     e.preventDefault();
+
+    const dados = {
+      product: document.getElementById("product-name").value,
+      oldPrice: document.getElementById("old-price").value,
+      xepaPrice: document.getElementById("xepa-price").value,
+      stall: document.getElementById("stall-info").value,
+      categoria: document.getElementById("offer-categoria").value,
+      setor: document.getElementById("offer-setor").value
+    };
+
+    /* Valida antes de modificar o estado; em erro, preserva o digitado */
+    const validacao = validarOferta(dados);
+    if (!validacao.valido) {
+      mostrarErrosFormulario(validacao.erros);
+      showToast("Corrija os campos destacados e tente de novo.");
+      return;
+    }
+    limparErrosFormulario();
+
     const offers = loadOffers();
     const isOnline = navigator.onLine;
 
     offers.unshift({
       id: `lot-${Date.now()}`,
-      product: document.getElementById("product-name").value.trim(),
-      oldPrice: parseFloat(document.getElementById("old-price").value),
-      xepaPrice: parseFloat(document.getElementById("xepa-price").value),
-      stall: document.getElementById("stall-info").value.trim(),
+      product: dados.product.trim(),
+      categoria: dados.categoria,
+      quantidade: "",
+      oldPrice: Number(dados.oldPrice),
+      xepaPrice: Number(dados.xepaPrice),
+      stall: `${dados.stall.trim()} - ${dados.setor}`,
+      banca: dados.stall.trim(),
+      setor: dados.setor,
       coords: getCapturedCoords(),
       photo: getCompressedPhoto(),
       synced: isOnline,
@@ -191,5 +195,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     syncOfflineQueue();
+  });
+
+  /* Filtro de categoria do mural */
+  document.getElementById("filtros-categoria").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    setFiltro(chip.dataset.categoria);
+    renderFiltros();
+    renderAll();
   });
 });

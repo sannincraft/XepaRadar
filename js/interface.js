@@ -5,7 +5,9 @@ import {
   loadOffers,
   saveOffers,
   calcDistanceMeters,
-  userCoords
+  userCoords,
+  filtroAtual,
+  removerOferta
 } from "./estado.js";
 
 function persistir(ofertas) {
@@ -86,6 +88,26 @@ export async function shareOffer(offer) {
   }
 }
 
+/* Mensagens de validação do formulário */
+export function mostrarErrosFormulario(erros) {
+  limparErrosFormulario();
+  Object.entries(erros).forEach(([campo, mensagem]) => {
+    const input = document.getElementById(campo);
+    const saida = document.getElementById(`erro-${campo}`);
+    if (input) input.setAttribute("aria-invalid", "true");
+    if (saida) saida.textContent = mensagem;
+  });
+}
+
+export function limparErrosFormulario() {
+  document.querySelectorAll(".erro-campo").forEach((el) => {
+    el.textContent = "";
+  });
+  document.querySelectorAll("[aria-invalid]").forEach((el) => {
+    el.removeAttribute("aria-invalid");
+  });
+}
+
 /* Estados de carregamento do mural */
 export function mostrarCarregandoMural() {
   const muralEl = document.getElementById("offers-list");
@@ -101,10 +123,35 @@ export function mostrarErroMural(mensagem) {
   status.textContent = mensagem;
 }
 
+/* Filtros de categoria do mural (opções lidas do data/dados.json) */
+let categoriasFiltro = ["Todos"];
+
+export function definirCategoriasFiltro(categorias) {
+  categoriasFiltro = ["Todos", ...categorias];
+}
+
+export function renderFiltros() {
+  const container = document.getElementById("filtros-categoria");
+  if (!container) return;
+  container.innerHTML = "";
+  categoriasFiltro.forEach((categoria) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip" + (categoria === filtroAtual ? " active" : "");
+    chip.dataset.categoria = categoria;
+    chip.textContent = categoria;
+    chip.setAttribute("aria-pressed", categoria === filtroAtual ? "true" : "false");
+    container.appendChild(chip);
+  });
+}
+
 /* Renderização das listas (mural e "minhas bancas") */
 export function renderAll() {
   const offers = loadOffers();
-  const activeOffers = offers.filter((o) => !o.soldOut);
+  const ativas = offers.filter((o) => !o.soldOut);
+  const activeOffers = filtroAtual === "Todos"
+    ? ativas
+    : ativas.filter((o) => o.categoria === filtroAtual);
 
   if (userCoords) {
     activeOffers.sort((a, b) => {
@@ -119,8 +166,6 @@ export function renderAll() {
 
   activeOffers.forEach((offer) => {
     const dist = calcDistanceMeters(userCoords, offer.coords);
-    const distText = dist !== null ? ` • ~${dist} m de você` : "";
-    const syncBadge = offer.synced ? "" : " [Aguardando sinal]";
 
     const card = document.createElement("article");
     card.className = "offer-card";
@@ -151,7 +196,10 @@ export function renderAll() {
 
     const meta = document.createElement("p");
     meta.className = "meta";
-    meta.textContent = `${offer.stall}${distText}${syncBadge}`;
+    const detalhes = [offer.stall, offer.categoria, offer.quantidade];
+    if (dist !== null) detalhes.push(`~${dist} m de você`);
+    if (!offer.synced) detalhes.push("Aguardando sinal");
+    meta.textContent = detalhes.filter(Boolean).join(" • ");
     card.appendChild(meta);
 
     const shareBtn = document.createElement("button");
@@ -210,6 +258,22 @@ export function renderAll() {
       });
       card.appendChild(soldBtn);
     }
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn-danger delete-btn";
+    deleteBtn.textContent = "Excluir oferta";
+    deleteBtn.addEventListener("click", () => {
+      if (!window.confirm(`Excluir "${offer.product}" definitivamente?`)) return;
+      const { resultado } = removerOferta(offer.id);
+      if (resultado.ok) {
+        renderAll();
+        showToast("Oferta excluída.");
+      } else {
+        showToast("Não foi possível excluir. Tente novamente.");
+      }
+    });
+    card.appendChild(deleteBtn);
 
     myEl.appendChild(card);
   });

@@ -112,6 +112,19 @@ body {
   margin-bottom: 1rem;
 }
 
+.erro-campo {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-urucum);
+  min-height: 0;
+  margin-top: -0.6rem;
+}
+
+[aria-invalid="true"] {
+  border-color: var(--accent-urucum);
+  outline: 2px solid rgba(200, 75, 49, 0.35);
+}
+
 .cards-grid {
   display: grid;
   gap: 1rem;
@@ -175,12 +188,14 @@ body {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+select {
   width: 100%;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--border-soft);
   border-radius: 8px;
   font-size: 1rem;
+  background: #fff;
 }
 
 .row-2 {
@@ -198,8 +213,28 @@ input[type="number"] {
   cursor: pointer;
 }
 
+/* input escondido, mas acessível pelo teclado (não usa display:none) */
 .file-label input {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file-label {
+  position: relative;
+  display: block;
+}
+
+.file-label:focus-within {
+  outline: 3px solid var(--accent-leaf);
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 
 .preview {
@@ -211,6 +246,30 @@ input[type="number"] {
 
 .hidden {
   display: none;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  color: var(--ink-muted);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip.active {
+  background: var(--accent-urucum);
+  border-color: var(--accent-urucum);
+  color: #fff;
 }
 
 .gps-box {
@@ -238,6 +297,17 @@ input[type="number"] {
 .btn-secondary {
   background: #ece5da;
   color: var(--ink-primary);
+}
+
+.btn-danger {
+  background: #fdecea;
+  color: var(--accent-urucum);
+  border: 1px solid rgba(200, 75, 49, 0.4);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .info-card h3 {

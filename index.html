@@ -18,10 +18,10 @@
   </header>
 
   <nav class="tabs" aria-label="Navegação principal">
-    <button class="tab-btn active" data-target="sec-mural">Mural Xepa</button>
-    <button class="tab-btn" data-target="sec-anunciar">Anunciar Lote</button>
-    <button class="tab-btn" data-target="sec-minhas">Minhas Bancas</button>
-    <button class="tab-btn" data-target="sec-sobre">Sobre & LGPD</button>
+    <button class="tab-btn active" data-rota="/mural">Mural Xepa</button>
+    <button class="tab-btn" data-rota="/anunciar">Anunciar Lote</button>
+    <button class="tab-btn" data-rota="/minhas">Minhas Bancas</button>
+    <button class="tab-btn" data-rota="/sobre">Sobre & LGPD</button>
   </nav>
 
   <main class="container">
@@ -34,6 +34,7 @@
         </button>
       </div>
       <p id="location-status" class="hint">Mostrando ofertas recentes da feira.</p>
+      <div id="filtros-categoria" class="filtros" role="group" aria-label="Filtrar ofertas por categoria"></div>
       <div id="offers-list" class="cards-grid"></div>
     </section>
 
@@ -44,7 +45,7 @@
         Enquadre apenas os alimentos na bancada, evitando rostos de pessoas ao fundo.
       </p>
 
-      <form id="offer-form" class="card-form">
+      <form id="offer-form" class="card-form" novalidate>
         <label class="file-label" for="photo-input">
           <span id="photo-label-text">Fotografar lote na bancada</span>
           <input
@@ -58,24 +59,59 @@
 
         <label>
           Produto / Lote
-          <input type="text" id="product-name" placeholder="Ex.: 3 pencas de banana-da-terra" required>
+          <input type="text" id="product-name" placeholder="Ex.: 3 pencas de banana-da-terra">
         </label>
+        <p class="erro-campo" id="erro-product-name" aria-live="polite"></p>
 
         <div class="row-2">
-          <label>
-            Preço normal (R$)
-            <input type="number" id="old-price" step="0.50" min="1" placeholder="18,00" required>
-          </label>
-          <label>
-            Preço Xepa (R$)
-            <input type="number" id="xepa-price" step="0.50" min="0.50" placeholder="8,00" required>
-          </label>
+          <div>
+            <label>
+              Preço normal (R$)
+              <input type="number" id="old-price" step="0.50" min="1" placeholder="18,00">
+            </label>
+            <p class="erro-campo" id="erro-old-price" aria-live="polite"></p>
+          </div>
+          <div>
+            <label>
+              Preço Xepa (R$)
+              <input type="number" id="xepa-price" step="0.50" min="0.50" placeholder="8,00">
+            </label>
+            <p class="erro-campo" id="erro-xepa-price" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label>
+              Categoria
+              <select id="offer-categoria">
+                <option value="">Selecione...</option>
+                <option value="Hortifrúti">Hortifrúti</option>
+                <option value="Peixes">Peixes</option>
+                <option value="Frutas">Frutas</option>
+              </select>
+            </label>
+            <p class="erro-campo" id="erro-offer-categoria" aria-live="polite"></p>
+          </div>
+          <div>
+            <label>
+              Setor da feira
+              <select id="offer-setor">
+                <option value="">Selecione...</option>
+                <option value="Galpão Central">Galpão Central</option>
+                <option value="Rua Lateral">Rua Lateral</option>
+                <option value="Ala Hortifrúti">Ala Hortifrúti</option>
+              </select>
+            </label>
+            <p class="erro-campo" id="erro-offer-setor" aria-live="polite"></p>
+          </div>
         </div>
 
         <label>
-          Banca e Setor da Feira
-          <input type="text" id="stall-info" placeholder="Ex.: Banca 12 - Galpão Hortifrúti" required>
+          Banca
+          <input type="text" id="stall-info" placeholder="Ex.: Banca 12">
         </label>
+        <p class="erro-campo" id="erro-stall-info" aria-live="polite"></p>
 
         <div class="gps-box">
           <button type="button" id="btn-capture-gps" class="btn-secondary">

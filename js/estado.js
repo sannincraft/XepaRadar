@@ -41,6 +41,13 @@ export function definirOfertasBase(lista) {
   ofertasBase = lista;
 }
 
+/* Filtro ativo do mural (categoria) */
+export let filtroAtual = "Todos";
+
+export function setFiltro(categoria) {
+  filtroAtual = categoria;
+}
+
 export let capturedCoords = null;
 export let compressedPhotoDataUrl = "";
 export let userCoords = null;
@@ -75,6 +82,12 @@ export function saveOffers(offers) {
 
 export function ofertasJaGravadas() {
   return ler(CHAVE_OFERTAS, null) !== null;
+}
+
+/* Remove uma oferta do estado (ação destrutiva: exige confirmação na interface) */
+export function removerOferta(id) {
+  const ofertas = loadOffers().filter((o) => o.id !== id);
+  return { ofertas, resultado: saveOffers(ofertas) };
 }
 
 /* Cálculo de distância entre dois pontos (Haversine, em metros) */
