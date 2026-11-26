@@ -44,7 +44,10 @@ function garantirArquivo() {
 function lerOfertas() {
   garantirArquivo();
   try {
-    const dados = fs.readFileSync(ARQUIVO_OFERTAS, 'utf-8');
+    let dados = fs.readFileSync(ARQUIVO_OFERTAS, 'utf-8');
+    if (dados.charCodeAt(0) === 0xFEFF) {
+      dados = dados.slice(1);
+    }
     return JSON.parse(dados);
   } catch (erro) {
     console.error('[ServicoOfertas] Erro ao ler ofertas:', erro);
