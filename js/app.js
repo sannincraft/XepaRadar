@@ -321,4 +321,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     syncOfflineQueue();
   });
+  // Registra Service Worker para suporte offline
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .catch((erro) => console.warn('Falha ao registrar Service Worker:', erro));
+  }
 });
