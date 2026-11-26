@@ -1,0 +1,128 @@
+{
+  "categorias": [
+    "Hortifrúti",
+    "Frutas",
+    "Peixes",
+    "Outros"
+  ],
+  "setores": [
+    "Ala Hortifrúti",
+    "Galpão Central",
+    "Rua Lateral",
+    "Pavilhão de Pescados"
+  ],
+  "ofertas": [
+    {
+      "id": "seed-1",
+      "produto": "Cheiro-verde + Cebolinha (kit com 4 maços)",
+      "product": "Cheiro-verde + Cebolinha (kit com 4 maços)",
+      "categoria": "Hortifrúti",
+      "precoOriginal": 12.0,
+      "oldPrice": 12.0,
+      "precoXepa": 5.0,
+      "xepaPrice": 5.0,
+      "quantidade": "kit com 4 maços",
+      "banca": "Banca 04",
+      "stall": "Banca 04 - Ala Hortifrúti",
+      "setor": "Ala Hortifrúti",
+      "lat": -10.8853,
+      "lng": -61.9517,
+      "coords": {
+        "lat": -10.8853,
+        "lng": -61.9517
+      },
+      "fotoUrl": "",
+      "photo": "",
+      "donoId": "seed-anonimo",
+      "criadaEm": 1732489200000,
+      "expiraEm": 1732496400000,
+      "status": "ativa",
+      "synced": true,
+      "soldOut": false
+    },
+    {
+      "id": "seed-2",
+      "produto": "Mandioca descascada embalada (2 kg)",
+      "product": "Mandioca descascada embalada (2 kg)",
+      "categoria": "Hortifrúti",
+      "precoOriginal": 14.0,
+      "oldPrice": 14.0,
+      "precoXepa": 7.0,
+      "xepaPrice": 7.0,
+      "quantidade": "2 kg",
+      "banca": "Banca 19",
+      "stall": "Banca 19 - Galpão Central",
+      "setor": "Galpão Central",
+      "lat": -10.8861,
+      "lng": -61.9522,
+      "coords": {
+        "lat": -10.8861,
+        "lng": -61.9522
+      },
+      "fotoUrl": "",
+      "photo": "",
+      "donoId": "seed-anonimo",
+      "criadaEm": 1732488420000,
+      "expiraEm": 1732495620000,
+      "status": "ativa",
+      "synced": true,
+      "soldOut": false
+    },
+    {
+      "id": "seed-3",
+      "produto": "Banana-da-Terra madura (3 pencas)",
+      "product": "Banana-da-Terra madura (3 pencas)",
+      "categoria": "Frutas",
+      "precoOriginal": 18.0,
+      "oldPrice": 18.0,
+      "precoXepa": 8.0,
+      "xepaPrice": 8.0,
+      "quantidade": "3 pencas",
+      "banca": "Banca do Sr. João",
+      "stall": "Banca do Sr. João - Ala Hortifrúti",
+      "setor": "Ala Hortifrúti",
+      "lat": -10.885,
+      "lng": -61.9515,
+      "coords": {
+        "lat": -10.885,
+        "lng": -61.9515
+      },
+      "fotoUrl": "",
+      "photo": "",
+      "donoId": "seed-anonimo",
+      "criadaEm": 1732487220000,
+      "expiraEm": 1732494420000,
+      "status": "ativa",
+      "synced": true,
+      "soldOut": false
+    },
+    {
+      "id": "seed-4",
+      "produto": "Tilápia fresca limpa (3 unidades)",
+      "product": "Tilápia fresca limpa (3 unidades)",
+      "categoria": "Peixes",
+      "precoOriginal": 35.0,
+      "oldPrice": 35.0,
+      "precoXepa": 20.0,
+      "xepaPrice": 20.0,
+      "quantidade": "3 unidades",
+      "banca": "Pescados do Porto",
+      "stall": "Pescados do Porto - Pavilhão de Pescados",
+      "setor": "Pavilhão de Pescados",
+      "lat": -10.887,
+      "lng": -61.953,
+      "coords": {
+        "lat": -10.887,
+        "lng": -61.953
+      },
+      "fotoUrl": "",
+      "photo": "",
+      "donoId": "seed-anonimo",
+      "criadaEm": 1732486020000,
+      "expiraEm": 1732493220000,
+      "status": "ativa",
+      "synced": true,
+      "soldOut": false
+    }
+  ]
+}
