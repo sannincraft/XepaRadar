@@ -109,4 +109,59 @@ router.post('/', (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/ofertas/:id/esgotar
+ * Marca o lote como esgotado (restrito ao proprietário da oferta via cabeçalho X-Dono-Id).
+ */
+router.patch('/:id/esgotar', (req, res) => {
+  try {
+    const donoId = req.headers['x-dono-id'];
+    if (!donoId) {
+      return res.status(400).json({
+        erro: 'Cabeçalho X-Dono-Id é obrigatório para marcar oferta como esgotada.'
+      });
+    }
+
+    const resultado = ofertasServico.esgotarOferta(req.params.id, donoId);
+    if (!resultado.sucesso) {
+      return res.status(resultado.status || 400).json({ erro: resultado.erro });
+    }
+
+    return res.status(200).json({
+      id: req.params.id,
+      status: 'esgotada',
+      mensagem: 'Oferta marcada como esgotada com sucesso.',
+      oferta: resultado.oferta
+    });
+  } catch (erro) {
+    console.error('[RotasOfertas] Erro ao esgotar oferta:', erro);
+    return res.status(500).json({ erro: 'Erro interno ao atualizar status da oferta.' });
+  }
+});
+
+/**
+ * DELETE /api/ofertas/:id
+ * Exclui uma oferta do mural (restrito ao proprietário da oferta via cabeçalho X-Dono-Id).
+ */
+router.delete('/:id', (req, res) => {
+  try {
+    const donoId = req.headers['x-dono-id'];
+    if (!donoId) {
+      return res.status(400).json({
+        erro: 'Cabeçalho X-Dono-Id é obrigatório para excluir a oferta.'
+      });
+    }
+
+    const resultado = ofertasServico.excluirOferta(req.params.id, donoId);
+    if (!resultado.sucesso) {
+      return res.status(resultado.status || 400).json({ erro: resultado.erro });
+    }
+
+    return res.status(204).send();
+  } catch (erro) {
+    console.error('[RotasOfertas] Erro ao excluir oferta:', erro);
+    return res.status(500).json({ erro: 'Erro interno ao excluir oferta do servidor.' });
+  }
+});
+
 module.exports = router;

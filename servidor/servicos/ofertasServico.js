@@ -63,11 +63,21 @@ function gravarOfertas(ofertas) {
 
 /**
  * Lista as ofertas cadastradas com suporte a filtros por query.
+ * No mural público, exibe apenas ofertas ativas e dentro do prazo de 2 horas.
  * @param {{ categoria?: string, setor?: string }} filtros
- * @returns {Array} Ofertas filtradas
+ * @returns {Array} Ofertas ativas filtradas
  */
 function listarOfertas(filtros = {}) {
   let ofertas = lerOfertas();
+  const agora = Date.now();
+
+  // Expiração automática de 2 horas e exclusão de esgotadas no mural público
+  ofertas = ofertas.filter((o) => {
+    const isAtiva = (o.status || 'ativa').toLowerCase() === 'ativa';
+    const expiraEm = o.expiraEm || (o.criadaEm ? o.criadaEm + 2 * 60 * 60 * 1000 : Infinity);
+    const dentroDoPrazo = agora < expiraEm;
+    return isAtiva && dentroDoPrazo;
+  });
 
   if (filtros.categoria && filtros.categoria.toLowerCase() !== 'todos') {
     ofertas = ofertas.filter(
@@ -136,10 +146,69 @@ function criarOferta(dadosOferta, donoId) {
   return { jaExistia: false, oferta: novaOferta };
 }
 
+/**
+ * Marca uma oferta como esgotada, validando a permissão do proprietário (X-Dono-Id).
+ * @param {string} id 
+ * @param {string} donoId 
+ * @returns {{ sucesso: boolean, status?: number, erro?: string, oferta?: Object }}
+ */
+function esgotarOferta(id, donoId) {
+  const ofertas = lerOfertas();
+  const oferta = ofertas.find((o) => o.id === id);
+
+  if (!oferta) {
+    return { sucesso: false, status: 404, erro: 'Oferta não encontrada.' };
+  }
+
+  if (oferta.donoId !== donoId) {
+    return {
+      sucesso: false,
+      status: 403,
+      erro: 'Apenas o feirante proprietário pode marcar esta oferta como esgotada.'
+    };
+  }
+
+  oferta.status = 'esgotada';
+  gravarOfertas(ofertas);
+
+  return { sucesso: true, oferta };
+}
+
+/**
+ * Exclui uma oferta definitivamente, restrito ao proprietário (X-Dono-Id).
+ * @param {string} id 
+ * @param {string} donoId 
+ * @returns {{ sucesso: boolean, status?: number, erro?: string }}
+ */
+function excluirOferta(id, donoId) {
+  const ofertas = lerOfertas();
+  const index = ofertas.findIndex((o) => o.id === id);
+
+  if (index === -1) {
+    return { sucesso: false, status: 404, erro: 'Oferta não encontrada.' };
+  }
+
+  const oferta = ofertas[index];
+  if (oferta.donoId !== donoId) {
+    return {
+      sucesso: false,
+      status: 403,
+      erro: 'Apenas o feirante proprietário pode excluir esta oferta.'
+    };
+  }
+
+  ofertas.splice(index, 1);
+  gravarOfertas(ofertas);
+
+  return { sucesso: true };
+}
+
 module.exports = {
   listarOfertas,
   listarOfertasPorDono,
   criarOferta,
+  esgotarOferta,
+  excluirOferta,
   lerOfertas,
   gravarOfertas
 };
