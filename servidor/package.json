@@ -1,0 +1,16 @@
+{
+  "name": "xeparadar-servidor",
+  "version": "1.0.0",
+  "description": "Servidor backend da aplicação XepaRadar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "author": "Diego",
+  "license": "ISC"
+}
