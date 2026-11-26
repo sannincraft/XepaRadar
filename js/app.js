@@ -8,7 +8,8 @@ import {
   setUserCoords,
   getCapturedCoords,
   getCompressedPhoto,
-  definirOfertasBase
+  definirOfertasBase,
+  ofertasJaGravadas
 } from "./estado.js";
 import {
   renderAll,
@@ -51,7 +52,7 @@ async function carregarDadosDaFeira() {
     const ofertas = dados.ofertas.map(mapearOferta);
     definirOfertasBase(ofertas);
     /* Primeira visita: grava as ofertas de exemplo no localStorage */
-    if (!localStorage.getItem("xeparadar_offers_v1")) {
+    if (!ofertasJaGravadas()) {
       saveOffers(ofertas);
     }
     renderAll();
@@ -161,7 +162,15 @@ document.addEventListener("DOMContentLoaded", () => {
       createdAt: Date.now()
     });
 
-    saveOffers(offers);
+    const gravou = saveOffers(offers);
+    if (!gravou.ok) {
+      showToast(
+        gravou.erro === "quota"
+          ? "Armazenamento do aparelho cheio. Apague ofertas antigas e tente de novo."
+          : "Não foi possível salvar no aparelho. Tente novamente."
+      );
+      return;
+    }
     e.target.reset();
     setCompressedPhoto("");
     setCapturedCoords(null);

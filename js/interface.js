@@ -8,6 +8,18 @@ import {
   userCoords
 } from "./estado.js";
 
+function persistir(ofertas) {
+  const resultado = saveOffers(ofertas);
+  if (!resultado.ok) {
+    if (resultado.erro === "quota") {
+      showToast("Armazenamento do aparelho cheio. Apague ofertas antigas e tente de novo.");
+    } else {
+      showToast("Não foi possível salvar no aparelho. Tente novamente.");
+    }
+  }
+  return resultado.ok;
+}
+
 export function showToast(message) {
   const toast = document.getElementById("toast");
   toast.textContent = message;
@@ -43,9 +55,10 @@ export function syncOfflineQueue() {
     }
   });
   if (updated) {
-    saveOffers(offers);
-    renderAll();
-    showToast("Conexão restabelecida: lotes offline sincronizados.");
+    if (persistir(ofertas)) {
+      renderAll();
+      showToast("Conexão restabelecida: lotes offline sincronizados.");
+    }
   }
 }
 
@@ -111,17 +124,43 @@ export function renderAll() {
 
     const card = document.createElement("article");
     card.className = "offer-card";
-    card.innerHTML = `
-      ${offer.photo ? `<img class="offer-img" src="${offer.photo}" alt="Foto do lote: ${offer.product}">` : ""}
-      <h3>${offer.product}</h3>
-      <p class="price-row">
-        <span class="old-price">R$ ${offer.oldPrice.toFixed(2)}</span>
-        <span class="xepa-price">R$ ${offer.xepaPrice.toFixed(2)}</span>
-      </p>
-      <p class="meta">${offer.stall}${distText}${syncBadge}</p>
-      <button type="button" class="btn-secondary share-btn">Compartilhar oferta</button>
-    `;
-    card.querySelector(".share-btn").addEventListener("click", () => shareOffer(offer));
+
+    if (offer.photo) {
+      const img = document.createElement("img");
+      img.className = "offer-img";
+      img.src = offer.photo;
+      img.alt = `Foto do lote: ${offer.product}`;
+      card.appendChild(img);
+    }
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = offer.product;
+    card.appendChild(titulo);
+
+    const priceRow = document.createElement("p");
+    priceRow.className = "price-row";
+    const oldPrice = document.createElement("span");
+    oldPrice.className = "old-price";
+    oldPrice.textContent = `R$ ${offer.oldPrice.toFixed(2)}`;
+    const xepaPrice = document.createElement("span");
+    xepaPrice.className = "xepa-price";
+    xepaPrice.textContent = `R$ ${offer.xepaPrice.toFixed(2)}`;
+    priceRow.appendChild(oldPrice);
+    priceRow.appendChild(xepaPrice);
+    card.appendChild(priceRow);
+
+    const meta = document.createElement("p");
+    meta.className = "meta";
+    meta.textContent = `${offer.stall}${distText}${syncBadge}`;
+    card.appendChild(meta);
+
+    const shareBtn = document.createElement("button");
+    shareBtn.type = "button";
+    shareBtn.className = "btn-secondary share-btn";
+    shareBtn.textContent = "Compartilhar oferta";
+    shareBtn.addEventListener("click", () => shareOffer(offer));
+    card.appendChild(shareBtn);
+
     muralEl.appendChild(card);
   });
 
@@ -137,23 +176,41 @@ export function renderAll() {
 
     const card = document.createElement("article");
     card.className = "offer-card";
-    card.innerHTML = `
-      <h3>${offer.product}</h3>
-      <p class="meta">${offer.stall} — R$ ${offer.xepaPrice.toFixed(2)}</p>
-      <p class="meta"><strong>Status:</strong> ${statusLabel}</p>
-      ${!offer.soldOut ? `<button type="button" class="btn-secondary sold-btn">Marcar como esgotado</button>` : ""}
-    `;
-    const soldBtn = card.querySelector(".sold-btn");
-    if (soldBtn) {
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = offer.product;
+    card.appendChild(titulo);
+
+    const metaStall = document.createElement("p");
+    metaStall.className = "meta";
+    metaStall.textContent = `${offer.stall} — R$ ${offer.xepaPrice.toFixed(2)}`;
+    card.appendChild(metaStall);
+
+    const metaStatus = document.createElement("p");
+    metaStatus.className = "meta";
+    const strong = document.createElement("strong");
+    strong.textContent = "Status: ";
+    metaStatus.appendChild(strong);
+    metaStatus.appendChild(document.createTextNode(statusLabel));
+    card.appendChild(metaStatus);
+
+    if (!offer.soldOut) {
+      const soldBtn = document.createElement("button");
+      soldBtn.type = "button";
+      soldBtn.className = "btn-secondary sold-btn";
+      soldBtn.textContent = "Marcar como esgotado";
       soldBtn.addEventListener("click", () => {
         const list = loadOffers();
         const target = list.find((i) => i.id === offer.id);
         if (target) target.soldOut = true;
-        saveOffers(list);
-        renderAll();
-        showToast("Lote marcado como esgotado.");
+        if (persistir(list)) {
+          renderAll();
+          showToast("Lote marcado como esgotado.");
+        }
       });
+      card.appendChild(soldBtn);
     }
+
     myEl.appendChild(card);
   });
 }

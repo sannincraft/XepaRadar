@@ -1,7 +1,9 @@
 /* estado.js — dados de exemplo, estado do formulário e da localização,
    persistência no localStorage e cálculo de distância. */
 
-export const STORAGE_KEY = "xeparadar_offers_v1";
+import { ler, gravar } from "./armazenamento.js";
+
+const CHAVE_OFERTAS = "ofertas";
 
 export const DEFAULT_OFFERS = [
   {
@@ -64,15 +66,15 @@ export function getCompressedPhoto() {
 }
 
 export function loadOffers() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return [...ofertasBase];
-  }
-  return JSON.parse(raw);
+  return ler(CHAVE_OFERTAS, [...ofertasBase]);
 }
 
 export function saveOffers(offers) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(offers));
+  return gravar(CHAVE_OFERTAS, offers);
+}
+
+export function ofertasJaGravadas() {
+  return ler(CHAVE_OFERTAS, null) !== null;
 }
 
 /* Cálculo de distância entre dois pontos (Haversine, em metros) */
