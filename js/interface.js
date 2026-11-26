@@ -73,6 +73,21 @@ export async function shareOffer(offer) {
   }
 }
 
+/* Estados de carregamento do mural */
+export function mostrarCarregandoMural() {
+  const muralEl = document.getElementById("offers-list");
+  muralEl.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "hint";
+  p.textContent = "Carregando ofertas da feira...";
+  muralEl.appendChild(p);
+}
+
+export function mostrarErroMural(mensagem) {
+  const status = document.getElementById("location-status");
+  status.textContent = mensagem;
+}
+
 /* Renderização das listas (mural e "minhas bancas") */
 export function renderAll() {
   const offers = loadOffers();

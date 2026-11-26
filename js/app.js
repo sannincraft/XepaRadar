@@ -7,15 +7,62 @@ import {
   setCompressedPhoto,
   setUserCoords,
   getCapturedCoords,
-  getCompressedPhoto
+  getCompressedPhoto,
+  definirOfertasBase
 } from "./estado.js";
 import {
   renderAll,
   showToast,
   updateNetworkStatus,
-  syncOfflineQueue
+  syncOfflineQueue,
+  mostrarCarregandoMural,
+  mostrarErroMural
 } from "./interface.js";
 import { iniciarNavegacao } from "./navegacao.js";
+
+/* Converte uma oferta do data/dados.json para o formato usado no app */
+function mapearOferta(oferta) {
+  return {
+    id: oferta.id,
+    product: oferta.product,
+    categoria: oferta.categoria,
+    quantidade: oferta.quantidade,
+    oldPrice: oferta.oldPrice,
+    xepaPrice: oferta.xepaPrice,
+    stall: `${oferta.banca} - ${oferta.setor}`,
+    banca: oferta.banca,
+    setor: oferta.setor,
+    coords: { lat: oferta.lat, lng: oferta.lng },
+    photo: oferta.foto,
+    synced: oferta.synced,
+    soldOut: oferta.soldOut,
+    createdAt: Date.now() - oferta.criadaHaMinutos * 60 * 1000
+  };
+}
+
+async function carregarDadosDaFeira() {
+  mostrarCarregandoMural();
+  try {
+    const resposta = await fetch("data/dados.json");
+    if (!resposta.ok) {
+      throw new Error(`HTTP ${resposta.status}`);
+    }
+    const dados = await resposta.json();
+    const ofertas = dados.ofertas.map(mapearOferta);
+    definirOfertasBase(ofertas);
+    /* Primeira visita: grava as ofertas de exemplo no localStorage */
+    if (!localStorage.getItem("xeparadar_offers_v1")) {
+      saveOffers(ofertas);
+    }
+    renderAll();
+  } catch (erro) {
+    console.error("Falha ao carregar data/dados.json:", erro);
+    mostrarErroMural(
+      "Não foi possível carregar as ofertas de exemplo (data/dados.json). Verifique o servidor e recarregue."
+    );
+    renderAll();
+  }
+}
 
 /* Captura e compressão de imagem via Canvas (remove EXIF) */
 function compressImage(file) {
@@ -44,7 +91,7 @@ function compressImage(file) {
 
 document.addEventListener("DOMContentLoaded", () => {
   updateNetworkStatus();
-  renderAll();
+  carregarDadosDaFeira();
   iniciarNavegacao();
 
   window.addEventListener("online", updateNetworkStatus);

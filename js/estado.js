@@ -31,6 +31,14 @@ export const DEFAULT_OFFERS = [
 ];
 
 /* Estado volátil do formulário e da sessão */
+/* Ofertas de exemplo carregadas de data/dados.json (via fetch no app.js).
+   Até o carregamento, usa a lista embutida como reserva. */
+let ofertasBase = [...DEFAULT_OFFERS];
+
+export function definirOfertasBase(lista) {
+  ofertasBase = lista;
+}
+
 export let capturedCoords = null;
 export let compressedPhotoDataUrl = "";
 export let userCoords = null;
@@ -58,8 +66,7 @@ export function getCompressedPhoto() {
 export function loadOffers() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_OFFERS));
-    return [...DEFAULT_OFFERS];
+    return [...ofertasBase];
   }
   return JSON.parse(raw);
 }
