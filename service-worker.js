@@ -9,7 +9,8 @@ const ARQUIVOS_CACHE = [
   '/js/app.js',
   '/js/armazenamento.js',
   '/js/api.js',
-  '/data/dados.json'
+  '/data/dados.json',
+  '/manifest.webmanifest'
 ];
 
 // Instala e armazena os arquivos no cache
